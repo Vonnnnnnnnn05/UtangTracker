@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "react-patterns": {
+      "source": "affaan-m/ECC",
+      "sourceType": "github",
+      "skillPath": "skills/react-patterns/SKILL.md",
+      "computedHash": "f8e41baad4a4a07f7257cd36c53c8c7cae34fa28044b0463d125f00fc4db4bec"
+    },
+    "react-performance": {
+      "source": "affaan-m/ECC",
+      "sourceType": "github",
+      "skillPath": "skills/react-performance/SKILL.md",
+      "computedHash": "19b063c14740b7d9bab442e15fb0103ced9b051a561b94d60d25d27fe70ceba7"
+    },
+    "react-testing": {
+      "source": "affaan-m/ECC",
+      "sourceType": "github",
+      "skillPath": "skills/react-testing/SKILL.md",
+      "computedHash": "81fee2b17b2c4abd40a45b8a096f0837e37778a796b8f4378389e5b703d9106b"
+    }
+  }
+}
