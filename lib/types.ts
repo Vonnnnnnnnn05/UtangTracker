@@ -1,6 +1,7 @@
 import type { Timestamp } from "firebase/firestore";
 
 export type DebtStatus = "unpaid" | "partial" | "paid" | "overdue";
+export type InterestPeriodUnit = "days" | "months";
 
 export type Customer = {
   id: string;
@@ -18,6 +19,11 @@ export type Debt = {
   id: string;
   ownerId: string;
   customerId: string;
+  principalAmount?: number;
+  interestRatePercent?: number;
+  interestAmount?: number;
+  interestPeriodValue?: number;
+  interestPeriodUnit?: InterestPeriodUnit;
   originalAmount: number;
   balance: number;
   dueDate: Timestamp;
@@ -47,7 +53,10 @@ export type CustomerInput = {
 
 export type DebtInput = {
   customerId: string;
-  originalAmount: number;
+  principalAmount: number;
+  interestRatePercent: number;
+  interestPeriodValue: number;
+  interestPeriodUnit: InterestPeriodUnit;
   dueDate: Date;
   note?: string;
 };

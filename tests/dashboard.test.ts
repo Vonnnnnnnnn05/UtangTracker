@@ -31,9 +31,39 @@ describe("dashboard metrics", () => {
     const today = new Date("2026-06-18T12:00:00");
     const metrics = getDashboardMetrics(
       [
-        debt({ id: "due", balance: 300, originalAmount: 300 }, new Date("2026-06-18T00:00:00")),
-        debt({ id: "late", balance: 200, originalAmount: 500 }, new Date("2026-06-17T00:00:00")),
-        debt({ id: "paid", balance: 0, originalAmount: 150 }, new Date("2026-06-16T00:00:00")),
+        debt(
+          {
+            id: "due",
+            balance: 300,
+            principalAmount: 270,
+            interestRatePercent: 11.11,
+            interestAmount: 30,
+            originalAmount: 300,
+          },
+          new Date("2026-06-18T00:00:00"),
+        ),
+        debt(
+          {
+            id: "late",
+            balance: 200,
+            principalAmount: 450,
+            interestRatePercent: 11.11,
+            interestAmount: 50,
+            originalAmount: 500,
+          },
+          new Date("2026-06-17T00:00:00"),
+        ),
+        debt(
+          {
+            id: "paid",
+            balance: 0,
+            principalAmount: 100,
+            interestRatePercent: 50,
+            interestAmount: 50,
+            originalAmount: 150,
+          },
+          new Date("2026-06-16T00:00:00"),
+        ),
       ],
       [
         payment({ id: "old", amountPaid: 50 }, new Date("2026-06-01T00:00:00")),
@@ -43,6 +73,10 @@ describe("dashboard metrics", () => {
     );
 
     expect(metrics.totalUtang).toBe(500);
+    expect(metrics.principalLent).toBe(820);
+    expect(metrics.expectedInterestIncome).toBe(130);
+    expect(metrics.collectedInterestIncome).toBe(80);
+    expect(metrics.outstandingInterestIncome).toBe(50);
     expect(metrics.dueToday).toHaveLength(1);
     expect(metrics.overdue).toHaveLength(1);
     expect(metrics.paidRecords).toHaveLength(1);

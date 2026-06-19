@@ -8,7 +8,12 @@ import { DebtForm } from "@/components/forms/debt-form";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { getDebtStatus } from "@/lib/debt";
+import {
+  formatInterestPeriod,
+  getDebtStatus,
+  getInterestAmount,
+  getInterestRatePercent,
+} from "@/lib/debt";
 import { deleteCustomer } from "@/lib/firebase/api";
 import { useOwnerData } from "@/lib/firebase/use-owner-data";
 import { formatPeso } from "@/lib/money";
@@ -101,7 +106,13 @@ export function CustomerDetailView({ customerId }: { customerId: string }) {
                 >
                   <div>
                     <p className="text-sm font-black text-ink">{formatPeso(debt.balance)}</p>
-                    <p className="text-xs font-semibold text-muted">Due {dueDate.toLocaleDateString("en-PH")}</p>
+                    <p className="text-xs font-semibold text-muted">
+                      Due {dueDate.toLocaleDateString("en-PH")} · {getInterestRatePercent(debt)}% every{" "}
+                      {formatInterestPeriod(debt)}
+                    </p>
+                    <p className="text-xs font-semibold text-leaf">
+                      Income {formatPeso(getInterestAmount(debt))}
+                    </p>
                   </div>
                   <StatusPill status={status} />
                 </Link>

@@ -8,7 +8,15 @@ import { PaymentForm } from "@/components/forms/payment-form";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { getDebtStatus } from "@/lib/debt";
+import {
+  formatInterestPeriod,
+  getCollectedInterest,
+  getDebtStatus,
+  getInterestAmount,
+  getInterestRatePercent,
+  getPrincipalAmount,
+  getOutstandingInterest,
+} from "@/lib/debt";
 import { deleteDebt, markDebtPaid } from "@/lib/firebase/api";
 import { useOwnerData } from "@/lib/firebase/use-owner-data";
 import { formatPeso } from "@/lib/money";
@@ -49,6 +57,12 @@ export function DebtDetailView({ debtId }: { debtId: string }) {
 
   const dueDate = debt.dueDate.toDate();
   const status = getDebtStatus({ ...debt, dueDate });
+  const principalAmount = getPrincipalAmount(debt);
+  const interestRatePercent = getInterestRatePercent(debt);
+  const interestAmount = getInterestAmount(debt);
+  const collectedInterest = getCollectedInterest(debt);
+  const outstandingInterest = getOutstandingInterest(debt);
+  const interestPeriod = formatInterestPeriod(debt);
 
   return (
     <div className="space-y-5 md:pl-56">
@@ -67,14 +81,35 @@ export function DebtDetailView({ debtId }: { debtId: string }) {
           <StatusPill status={status} />
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <div className="rounded-md bg-paper p-3">
             <p className="text-xs font-bold uppercase text-muted">Balance</p>
             <p className="text-2xl font-black text-ink">{formatPeso(debt.balance)}</p>
           </div>
           <div className="rounded-md bg-paper p-3">
-            <p className="text-xs font-bold uppercase text-muted">Original amount</p>
+            <p className="text-xs font-bold uppercase text-muted">Total to collect</p>
             <p className="text-2xl font-black text-ink">{formatPeso(debt.originalAmount)}</p>
+          </div>
+          <div className="rounded-md bg-mint p-3">
+            <p className="text-xs font-bold uppercase text-leaf">Interest income</p>
+            <p className="text-2xl font-black text-leaf">{formatPeso(interestAmount)}</p>
+          </div>
+          <div className="rounded-md bg-paper p-3">
+            <p className="text-xs font-bold uppercase text-muted">Principal</p>
+            <p className="text-xl font-black text-ink">{formatPeso(principalAmount)}</p>
+          </div>
+          <div className="rounded-md bg-paper p-3">
+            <p className="text-xs font-bold uppercase text-muted">Interest rate</p>
+            <p className="text-xl font-black text-ink">{interestRatePercent}%</p>
+          </div>
+          <div className="rounded-md bg-paper p-3">
+            <p className="text-xs font-bold uppercase text-muted">Interest occurs</p>
+            <p className="text-xl font-black text-ink">Every {interestPeriod}</p>
+          </div>
+          <div className="rounded-md bg-paper p-3">
+            <p className="text-xs font-bold uppercase text-muted">Income collected</p>
+            <p className="text-xl font-black text-ink">{formatPeso(collectedInterest)}</p>
+            <p className="text-xs font-semibold text-muted">Outstanding {formatPeso(outstandingInterest)}</p>
           </div>
         </div>
 

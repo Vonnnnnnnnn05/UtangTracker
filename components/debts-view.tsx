@@ -7,7 +7,13 @@ import { DebtForm } from "@/components/forms/debt-form";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
-import { getDebtStatus } from "@/lib/debt";
+import {
+  formatInterestPeriod,
+  getDebtStatus,
+  getInterestAmount,
+  getInterestRatePercent,
+  getPrincipalAmount,
+} from "@/lib/debt";
 import { useOwnerData } from "@/lib/firebase/use-owner-data";
 import { formatPeso } from "@/lib/money";
 
@@ -61,8 +67,17 @@ export function DebtsView() {
                     <p className="text-xs font-semibold text-muted">of {formatPeso(debt.originalAmount)}</p>
                   </div>
                 </div>
-                <div className="mt-3">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   <StatusPill status={status} />
+                  <span className="rounded-full border border-line bg-paper px-2.5 py-1 text-xs font-bold text-muted">
+                    Principal {formatPeso(getPrincipalAmount(debt))}
+                  </span>
+                  <span className="rounded-full border border-[#9CCFB2] bg-mint px-2.5 py-1 text-xs font-bold text-leaf">
+                    {getInterestRatePercent(debt)}% income {formatPeso(getInterestAmount(debt))}
+                  </span>
+                  <span className="rounded-full border border-line bg-white px-2.5 py-1 text-xs font-bold text-muted">
+                    Interest every {formatInterestPeriod(debt)}
+                  </span>
                 </div>
               </Link>
             );

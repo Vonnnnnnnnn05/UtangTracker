@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, CalendarClock, CheckCircle2, Coins } from "lucide-react";
+import { AlertTriangle, CalendarClock, CheckCircle2, Coins, HandCoins, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
@@ -23,11 +23,21 @@ export function DashboardView() {
         <h1 className="text-3xl font-black text-ink">Dashboard</h1>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <MetricCard icon={<Coins size={20} />} label="Total utang" value={formatPeso(metrics.totalUtang)} />
+        <MetricCard icon={<HandCoins size={20} />} label="Principal lent" value={formatPeso(metrics.principalLent)} />
+        <MetricCard
+          icon={<TrendingUp size={20} />}
+          label="Interest income"
+          value={formatPeso(metrics.expectedInterestIncome)}
+        />
+        <MetricCard
+          icon={<CheckCircle2 size={20} />}
+          label="Interest collected"
+          value={formatPeso(metrics.collectedInterestIncome)}
+        />
         <MetricCard icon={<CalendarClock size={20} />} label="Due today" value={String(metrics.dueToday.length)} />
         <MetricCard icon={<AlertTriangle size={20} />} label="Overdue" value={String(metrics.overdue.length)} />
-        <MetricCard icon={<CheckCircle2 size={20} />} label="Paid records" value={String(metrics.paidRecords.length)} />
       </div>
 
       <section className="grid gap-4 lg:grid-cols-2">

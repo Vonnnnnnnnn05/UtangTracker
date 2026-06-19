@@ -1,5 +1,12 @@
 import type { Customer, Debt, Payment } from "@/lib/types";
-import { isDueToday, isOverdue } from "@/lib/debt";
+import {
+  getCollectedInterest,
+  getInterestAmount,
+  getPrincipalAmount,
+  getOutstandingInterest,
+  isDueToday,
+  isOverdue,
+} from "@/lib/debt";
 
 type DebtWithDate = Omit<Debt, "dueDate"> & { dueDate: Date };
 type PaymentWithDate = Omit<Payment, "paidAt"> & { paidAt: Date };
@@ -13,6 +20,10 @@ export function getDashboardMetrics(
 
   return {
     totalUtang: outstandingDebts.reduce((sum, debt) => sum + debt.balance, 0),
+    principalLent: debts.reduce((sum, debt) => sum + getPrincipalAmount(debt), 0),
+    expectedInterestIncome: debts.reduce((sum, debt) => sum + getInterestAmount(debt), 0),
+    collectedInterestIncome: debts.reduce((sum, debt) => sum + getCollectedInterest(debt), 0),
+    outstandingInterestIncome: outstandingDebts.reduce((sum, debt) => sum + getOutstandingInterest(debt), 0),
     dueToday: outstandingDebts.filter((debt) => isDueToday(debt, today)),
     overdue: outstandingDebts.filter((debt) => isOverdue(debt, today)),
     paidRecords: debts.filter((debt) => debt.balance <= 0),

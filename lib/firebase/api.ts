@@ -15,7 +15,12 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/config";
 import { converter } from "@/lib/firebase/converters";
-import { calculateBalanceAfterPayment, getDebtStatus } from "@/lib/debt";
+import {
+  calculateBalanceAfterPayment,
+  calculateDebtTotal,
+  calculateInterestAmount,
+  getDebtStatus,
+} from "@/lib/debt";
 import type { Customer, CustomerInput, Debt, DebtInput, Payment, PaymentInput } from "@/lib/types";
 
 const customerCollection = collection(db, "customers").withConverter(converter<Customer>());
@@ -59,16 +64,23 @@ export async function deleteCustomer(customerId: string) {
 export async function createDebt(ownerId: string, input: DebtInput) {
   const now = serverTimestamp();
   const dueDate = Timestamp.fromDate(input.dueDate);
+  const interestAmount = calculateInterestAmount(input.principalAmount, input.interestRatePercent);
+  const originalAmount = calculateDebtTotal(input.principalAmount, input.interestRatePercent);
 
   const debtRef = await addDoc(debtCollection, {
     ownerId,
     customerId: input.customerId,
-    originalAmount: input.originalAmount,
-    balance: input.originalAmount,
+    principalAmount: input.principalAmount,
+    interestRatePercent: input.interestRatePercent,
+    interestAmount,
+    interestPeriodValue: input.interestPeriodValue,
+    interestPeriodUnit: input.interestPeriodUnit,
+    originalAmount,
+    balance: originalAmount,
     dueDate,
     status: getDebtStatus({
-      originalAmount: input.originalAmount,
-      balance: input.originalAmount,
+      originalAmount,
+      balance: originalAmount,
       dueDate: input.dueDate,
     }),
     note: input.note,
@@ -84,9 +96,26 @@ export async function updateDebt(debtId: string, input: Partial<DebtInput>) {
   };
 
   if (input.customerId) data.customerId = input.customerId;
-  if (typeof input.originalAmount === "number") {
-    data.originalAmount = input.originalAmount;
-    data.balance = input.originalAmount;
+  if (
+    typeof input.principalAmount === "number" ||
+    typeof input.interestRatePercent === "number"
+  ) {
+    const principalAmount = input.principalAmount ?? 0;
+    const interestRatePercent = input.interestRatePercent ?? 0;
+    const interestAmount = calculateInterestAmount(principalAmount, interestRatePercent);
+    const originalAmount = calculateDebtTotal(principalAmount, interestRatePercent);
+
+    data.principalAmount = principalAmount;
+    data.interestRatePercent = interestRatePercent;
+    data.interestAmount = interestAmount;
+    if (typeof input.interestPeriodValue === "number") {
+      data.interestPeriodValue = input.interestPeriodValue;
+    }
+    if (input.interestPeriodUnit) {
+      data.interestPeriodUnit = input.interestPeriodUnit;
+    }
+    data.originalAmount = originalAmount;
+    data.balance = originalAmount;
   }
   if (input.dueDate) data.dueDate = Timestamp.fromDate(input.dueDate);
   if (typeof input.note === "string") data.note = input.note;
