@@ -10,8 +10,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import {
   formatInterestPeriod,
+  getAccruedInterestAmount,
+  getCurrentBalance,
   getDebtStatus,
-  getInterestAmount,
   getInterestRatePercent,
 } from "@/lib/debt";
 import { deleteCustomer } from "@/lib/firebase/api";
@@ -24,7 +25,7 @@ export function CustomerDetailView({ customerId }: { customerId: string }) {
   const [addingDebt, setAddingDebt] = useState(false);
   const customer = customers.data.find((item) => item.id === customerId);
   const customerDebts = debts.data.filter((debt) => debt.customerId === customerId);
-  const totalBalance = customerDebts.reduce((sum, debt) => sum + Math.max(0, debt.balance), 0);
+  const totalBalance = customerDebts.reduce((sum, debt) => sum + getCurrentBalance(debt), 0);
 
   async function handleDelete() {
     if (!customer || !window.confirm(`Delete ${customer.name}? Debt records are not deleted automatically.`)) {
@@ -97,6 +98,7 @@ export function CustomerDetailView({ customerId }: { customerId: string }) {
             {customerDebts.map((debt) => {
               const dueDate = debt.dueDate.toDate();
               const status = getDebtStatus({ ...debt, dueDate });
+              const currentBalance = getCurrentBalance(debt);
 
               return (
                 <Link
@@ -105,13 +107,13 @@ export function CustomerDetailView({ customerId }: { customerId: string }) {
                   key={debt.id}
                 >
                   <div>
-                    <p className="text-sm font-black text-ink">{formatPeso(debt.balance)}</p>
+                    <p className="text-sm font-black text-ink">{formatPeso(currentBalance)}</p>
                     <p className="text-xs font-semibold text-muted">
-                      Due {dueDate.toLocaleDateString("en-PH")} · {getInterestRatePercent(debt)}% every{" "}
+                      Due {dueDate.toLocaleDateString("en-PH")} - {getInterestRatePercent(debt)}% every{" "}
                       {formatInterestPeriod(debt)}
                     </p>
                     <p className="text-xs font-semibold text-leaf">
-                      Income {formatPeso(getInterestAmount(debt))}
+                      Income {formatPeso(getAccruedInterestAmount(debt))}
                     </p>
                   </div>
                   <StatusPill status={status} />

@@ -1,7 +1,9 @@
 import type { Customer, Debt, Payment } from "@/lib/types";
 import {
+  getAccruedInterestAmount,
   getCollectedInterest,
-  getInterestAmount,
+  getCurrentBalance,
+  getCurrentDebtTotal,
   getPrincipalAmount,
   getOutstandingInterest,
   isDueToday,
@@ -16,19 +18,19 @@ export function getDashboardMetrics(
   payments: PaymentWithDate[],
   today = new Date(),
 ) {
-  const outstandingDebts = debts.filter((debt) => debt.balance > 0);
+  const outstandingDebts = debts.filter((debt) => getCurrentBalance(debt, today) > 0);
 
   return {
-    totalUtang: outstandingDebts.reduce((sum, debt) => sum + debt.balance, 0),
+    totalUtang: outstandingDebts.reduce((sum, debt) => sum + getCurrentBalance(debt, today), 0),
     principalLent: debts.reduce((sum, debt) => sum + getPrincipalAmount(debt), 0),
-    expectedInterestIncome: debts.reduce((sum, debt) => sum + getInterestAmount(debt), 0),
-    collectedInterestIncome: debts.reduce((sum, debt) => sum + getCollectedInterest(debt), 0),
-    outstandingInterestIncome: outstandingDebts.reduce((sum, debt) => sum + getOutstandingInterest(debt), 0),
+    expectedInterestIncome: debts.reduce((sum, debt) => sum + getAccruedInterestAmount(debt, today), 0),
+    collectedInterestIncome: debts.reduce((sum, debt) => sum + getCollectedInterest(debt, today), 0),
+    outstandingInterestIncome: outstandingDebts.reduce((sum, debt) => sum + getOutstandingInterest(debt, today), 0),
     dueToday: outstandingDebts.filter((debt) => isDueToday(debt, today)),
     overdue: outstandingDebts.filter((debt) => isOverdue(debt, today)),
     paidRecords: debts.filter((debt) => debt.balance <= 0),
     partialRecords: outstandingDebts.filter(
-      (debt) => debt.balance > 0 && debt.balance < debt.originalAmount,
+      (debt) => getCurrentBalance(debt, today) > 0 && getCurrentBalance(debt, today) < getCurrentDebtTotal(debt, today),
     ),
     recentPayments: payments
       .toSorted((left, right) => right.paidAt.getTime() - left.paidAt.getTime())
@@ -39,7 +41,7 @@ export function getDashboardMetrics(
 export function getCustomerDebtSummary(customers: Customer[], debts: DebtWithDate[]) {
   return customers.map((customer) => {
     const customerDebts = debts.filter((debt) => debt.customerId === customer.id);
-    const balance = customerDebts.reduce((sum, debt) => sum + Math.max(0, debt.balance), 0);
+    const balance = customerDebts.reduce((sum, debt) => sum + getCurrentBalance(debt), 0);
 
     return {
       customer,

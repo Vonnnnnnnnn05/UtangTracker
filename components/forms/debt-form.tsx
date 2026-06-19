@@ -7,6 +7,7 @@ import { dateInputValue } from "@/lib/date";
 import {
   calculateDebtTotal,
   calculateInterestAmount,
+  formatInterestPeriod,
   getInterestPeriod,
   getInterestRatePercent,
   getPrincipalAmount,
@@ -78,6 +79,10 @@ export function DebtForm({
     Number.isFinite(parsedPrincipal) && Number.isFinite(parsedRate)
       ? calculateDebtTotal(parsedPrincipal, parsedRate)
       : 0;
+  const previewInterestPeriod = formatInterestPeriod({
+    interestPeriodValue: Number(interestPeriodValue || 0),
+    interestPeriodUnit,
+  });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -253,12 +258,14 @@ export function DebtForm({
         </fieldset>
         <div className="grid gap-3 rounded-md bg-paper p-3 sm:grid-cols-2">
           <div>
-            <p className="text-xs font-bold uppercase text-muted">Interest income</p>
+            <p className="text-xs font-bold uppercase text-muted">Interest per period</p>
             <p className="text-lg font-black tabular-nums text-leaf">{formatPeso(previewInterest)}</p>
+            <p className="text-xs font-semibold text-muted">Adds every {previewInterestPeriod} until paid</p>
           </div>
           <div>
-            <p className="text-xs font-bold uppercase text-muted">Total to collect</p>
+            <p className="text-xs font-bold uppercase text-muted">Starting total</p>
             <p className="text-lg font-black tabular-nums text-ink">{formatPeso(previewTotal)}</p>
+            <p className="text-xs font-semibold text-muted">Grows when another period passes</p>
           </div>
         </div>
         <Input

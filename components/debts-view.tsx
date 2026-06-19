@@ -9,8 +9,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import {
   formatInterestPeriod,
+  getAccruedInterestAmount,
+  getCurrentBalance,
+  getCurrentDebtTotal,
   getDebtStatus,
-  getInterestAmount,
   getInterestRatePercent,
   getPrincipalAmount,
 } from "@/lib/debt";
@@ -47,6 +49,8 @@ export function DebtsView() {
           {debts.data.map((debt) => {
             const dueDate = debt.dueDate.toDate();
             const status = getDebtStatus({ ...debt, dueDate });
+            const currentBalance = getCurrentBalance(debt);
+            const currentTotal = getCurrentDebtTotal(debt);
 
             return (
               <Link
@@ -63,8 +67,8 @@ export function DebtsView() {
                     {debt.note ? <p className="mt-2 text-sm text-muted">{debt.note}</p> : null}
                   </div>
                   <div className="text-right">
-                    <p className="text-base font-black text-ink">{formatPeso(debt.balance)}</p>
-                    <p className="text-xs font-semibold text-muted">of {formatPeso(debt.originalAmount)}</p>
+                    <p className="text-base font-black text-ink">{formatPeso(currentBalance)}</p>
+                    <p className="text-xs font-semibold text-muted">of {formatPeso(currentTotal)}</p>
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -73,7 +77,7 @@ export function DebtsView() {
                     Principal {formatPeso(getPrincipalAmount(debt))}
                   </span>
                   <span className="rounded-full border border-[#9CCFB2] bg-mint px-2.5 py-1 text-xs font-bold text-leaf">
-                    {getInterestRatePercent(debt)}% income {formatPeso(getInterestAmount(debt))}
+                    {getInterestRatePercent(debt)}% income {formatPeso(getAccruedInterestAmount(debt))}
                   </span>
                   <span className="rounded-full border border-line bg-white px-2.5 py-1 text-xs font-bold text-muted">
                     Interest every {formatInterestPeriod(debt)}

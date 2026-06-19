@@ -27,10 +27,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     connectLocalEmulators();
 
-    return onAuthStateChanged(auth, (nextUser) => {
-      setUser(nextUser);
+    const fallback = window.setTimeout(() => {
       setLoading(false);
-    });
+    }, 8000);
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (nextUser) => {
+        window.clearTimeout(fallback);
+        setUser(nextUser);
+        setLoading(false);
+      },
+      () => {
+        window.clearTimeout(fallback);
+        setUser(null);
+        setLoading(false);
+      },
+    );
+
+    return () => {
+      window.clearTimeout(fallback);
+      unsubscribe();
+    };
   }, []);
 
   const value = useMemo(() => ({ user, loading }), [user, loading]);

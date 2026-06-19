@@ -10,9 +10,11 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import {
   formatInterestPeriod,
+  getAccruedInterestAmount,
   getCollectedInterest,
+  getCurrentBalance,
+  getCurrentDebtTotal,
   getDebtStatus,
-  getInterestAmount,
   getInterestRatePercent,
   getPrincipalAmount,
   getOutstandingInterest,
@@ -59,9 +61,11 @@ export function DebtDetailView({ debtId }: { debtId: string }) {
   const status = getDebtStatus({ ...debt, dueDate });
   const principalAmount = getPrincipalAmount(debt);
   const interestRatePercent = getInterestRatePercent(debt);
-  const interestAmount = getInterestAmount(debt);
+  const interestAmount = getAccruedInterestAmount(debt);
   const collectedInterest = getCollectedInterest(debt);
   const outstandingInterest = getOutstandingInterest(debt);
+  const currentBalance = getCurrentBalance(debt);
+  const currentTotal = getCurrentDebtTotal(debt);
   const interestPeriod = formatInterestPeriod(debt);
 
   return (
@@ -84,11 +88,11 @@ export function DebtDetailView({ debtId }: { debtId: string }) {
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <div className="rounded-md bg-paper p-3">
             <p className="text-xs font-bold uppercase text-muted">Balance</p>
-            <p className="text-2xl font-black text-ink">{formatPeso(debt.balance)}</p>
+            <p className="text-2xl font-black text-ink">{formatPeso(currentBalance)}</p>
           </div>
           <div className="rounded-md bg-paper p-3">
             <p className="text-xs font-bold uppercase text-muted">Total to collect</p>
-            <p className="text-2xl font-black text-ink">{formatPeso(debt.originalAmount)}</p>
+            <p className="text-2xl font-black text-ink">{formatPeso(currentTotal)}</p>
           </div>
           <div className="rounded-md bg-mint p-3">
             <p className="text-xs font-bold uppercase text-leaf">Interest income</p>
@@ -116,10 +120,10 @@ export function DebtDetailView({ debtId }: { debtId: string }) {
         {debt.note ? <p className="mt-4 rounded-md bg-paper p-3 text-sm text-ink">{debt.note}</p> : null}
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button disabled={debt.balance <= 0} onClick={() => setShowPayment((current) => !current)} type="button">
+          <Button disabled={currentBalance <= 0} onClick={() => setShowPayment((current) => !current)} type="button">
             Record payment
           </Button>
-          <Button disabled={debt.balance <= 0} onClick={handlePaid} type="button" variant="secondary">
+          <Button disabled={currentBalance <= 0} onClick={handlePaid} type="button" variant="secondary">
             <CheckCircle2 aria-hidden="true" size={17} />
             Mark paid
           </Button>

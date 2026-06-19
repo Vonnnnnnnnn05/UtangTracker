@@ -19,6 +19,9 @@ import {
   calculateBalanceAfterPayment,
   calculateDebtTotal,
   calculateInterestAmount,
+  getAccruedInterestAmount,
+  getCurrentBalance,
+  getCurrentDebtTotal,
   getDebtStatus,
 } from "@/lib/debt";
 import type { Customer, CustomerInput, Debt, DebtInput, Payment, PaymentInput } from "@/lib/types";
@@ -147,11 +150,15 @@ export async function createPayment(ownerId: string, input: PaymentInput) {
     }
 
     const debt = { id: debtSnapshot.id, ...debtSnapshot.data() } as Debt;
-    const amountPaid = Math.min(input.amountPaid, Math.max(0, debt.balance));
-    const balance = calculateBalanceAfterPayment(debt.balance, amountPaid);
+    const accruedInterestAmount = getAccruedInterestAmount(debt);
+    const originalAmount = getCurrentDebtTotal(debt);
+    const currentBalance = getCurrentBalance(debt);
+    const amountPaid = Math.min(input.amountPaid, currentBalance);
+    const balance = calculateBalanceAfterPayment(currentBalance, amountPaid);
     const paidAt = Timestamp.now();
     const status = getDebtStatus({
-      originalAmount: debt.originalAmount,
+      ...debt,
+      originalAmount,
       balance,
       dueDate: debt.dueDate.toDate(),
     });
@@ -166,6 +173,8 @@ export async function createPayment(ownerId: string, input: PaymentInput) {
     });
 
     transaction.update(debtRef, {
+      interestAmount: accruedInterestAmount,
+      originalAmount,
       balance,
       status,
       paidAt: balance === 0 ? paidAt : null,

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusPill } from "@/components/ui/status-pill";
 import { getDashboardMetrics } from "@/lib/dashboard";
-import { getDebtStatus } from "@/lib/debt";
+import { getCurrentBalance, getDebtStatus } from "@/lib/debt";
 import { useOwnerData } from "@/lib/firebase/use-owner-data";
 import { formatPeso } from "@/lib/money";
 
@@ -117,9 +117,16 @@ function DebtMiniList({
   debts: Array<{
     id: string;
     customerId: string;
+    principalAmount?: number;
+    interestRatePercent?: number;
+    interestAmount?: number;
+    interestPeriodValue?: number;
+    interestPeriodUnit?: "days" | "months";
     originalAmount: number;
     balance: number;
     dueDate: Date;
+    createdAt?: { toDate(): Date };
+    paidAt?: { toDate(): Date };
   }>;
   customerMap: Map<string, string>;
 }) {
@@ -136,7 +143,7 @@ function DebtMiniList({
             <p className="text-xs font-semibold text-muted">Due {debt.dueDate.toLocaleDateString("en-PH")}</p>
           </div>
           <div className="text-right">
-            <p className="text-sm font-black text-ink">{formatPeso(debt.balance)}</p>
+            <p className="text-sm font-black text-ink">{formatPeso(getCurrentBalance(debt))}</p>
             <StatusPill status={getDebtStatus(debt)} />
           </div>
         </Link>

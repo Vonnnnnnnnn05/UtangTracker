@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
+import { getCurrentBalance } from "@/lib/debt";
 import { createPayment } from "@/lib/firebase/api";
 import { formatPeso } from "@/lib/money";
 import type { Debt } from "@/lib/types";
@@ -18,12 +19,13 @@ export function PaymentForm({
   defaultDebtId?: string;
   onSaved?: () => void;
 }) {
-  const unpaidDebts = debts.filter((debt) => debt.balance > 0);
+  const unpaidDebts = debts.filter((debt) => getCurrentBalance(debt) > 0);
   const [selectedDebtId, setSelectedDebtId] = useState(defaultDebtId ?? unpaidDebts[0]?.id ?? "");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [pending, setPending] = useState(false);
   const selectedDebt = unpaidDebts.find((debt) => debt.id === selectedDebtId);
+  const selectedBalance = selectedDebt ? getCurrentBalance(selectedDebt) : undefined;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -76,16 +78,16 @@ export function PaymentForm({
             <option value="">Choose debt</option>
             {unpaidDebts.map((debt) => (
               <option key={debt.id} value={debt.id}>
-                {formatPeso(debt.balance)} due {debt.dueDate.toDate().toLocaleDateString("en-PH")}
+                {formatPeso(getCurrentBalance(debt))} due {debt.dueDate.toDate().toLocaleDateString("en-PH")}
               </option>
             ))}
           </select>
         </label>
         <Input
-          helper={selectedDebt ? `Current balance: ${formatPeso(selectedDebt.balance)}` : undefined}
+          helper={selectedBalance ? `Current balance: ${formatPeso(selectedBalance)}` : undefined}
           inputMode="decimal"
           label="Amount paid"
-          max={selectedDebt?.balance}
+          max={selectedBalance}
           min="1"
           name="amountPaid"
           required
